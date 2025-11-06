@@ -4,6 +4,12 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+
 
 public class BingoAdministrador extends JFrame {
     private JLabel numeroActualLabel;
@@ -524,8 +530,40 @@ public class BingoAdministrador extends JFrame {
         }
         super.dispose();
     }
-    
+
     public static void main(String[] args) {
+    	
+    	
+    	ServerSocket servidor = null;
+    	Socket sc = null;
+    	DataInputStream in;
+    	DataOutputStream out;
+    	final int PUERTO = 5000;
+    	
+    	try {
+    	servidor = new ServerSocket(PUERTO);
+    	System.out.println("Servidor iniciado");
+    	
+    	while (true) {
+    		sc= servidor.accept();
+    		
+    		System.out.println("Cliente conectado");
+    		in= new DataInputStream(sc.getInputStream());
+    		out= new DataOutputStream(sc.getOutputStream());
+    		
+    		String mensaje = in.readUTF();
+    		
+    		System.out.println(mensaje);
+    		
+    		out.writeUTF("HOLAMIUNFOD");
+    		sc.close();
+    		System.out.println("Cliente desconectado");
+    	}
+    	} catch (IOException ex) {
+    		Logger.getLogger(BingoAdministrador.class.getName()).log(Level.SEVERE,null, ex);
+    	}
+    	
+    	
         SwingUtilities.invokeLater(() -> new BingoAdministrador());
     }
 }

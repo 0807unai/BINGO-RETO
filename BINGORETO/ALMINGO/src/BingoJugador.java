@@ -660,6 +660,35 @@ public class BingoJugador extends JFrame {
     }
     
     public static void main(String[] args) {
+    	
+    	final String HOST= "192.168.0.244";
+    	final int PUERTO = 5000;
+    	DataInputStream in;
+    	DataOutputStream out;
+    	
+    	try {
+			Socket sc = new Socket(HOST, PUERTO);
+			
+			in= new DataInputStream(sc.getInputStream());
+	    	out = new DataOutputStream(sc.getOutputStream());
+	    	
+	    	out.writeUTF("HOLA CLIENTE");
+	    	
+	    	String mensaje = in.readUTF();
+	    	
+	    	System.out.println(mensaje);
+	    	
+	    	sc.close();
+	    	
+	    	
+		} catch (UnknownHostException e) {
+			
+			e.printStackTrace();
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+    	
         SwingUtilities.invokeLater(() -> new BingoJugador());
     }
 }
