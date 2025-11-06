@@ -20,7 +20,7 @@ public class BingoAdministrador extends JFrame {
     private List<ClientHandler> clientes;
     private Thread serverThread;
     
-    private static final String ARCHIVO_NUMEROS = "numeros_bingo.txt";
+    private static final String ARCHIVO_NUMEROS = "num_bingo.txt";
     private static final int PUERTO = 12345;
     
     private List<PreguntaSostenibilidad> preguntasLinea;

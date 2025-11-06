@@ -93,6 +93,25 @@ public class BingoJugador extends JFrame {
         return numeros;
     }
     
+    private void guardarNumerosEnArchivo() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(ARCHIVO_NUMEROS))) {
+            StringBuilder sb = new StringBuilder();
+            List<Integer> listaNumeros = new ArrayList<>(numerosLlamados);
+            Collections.sort(listaNumeros);
+            for (int i = 0; i < listaNumeros.size(); i++) {
+                sb.append(listaNumeros.get(i));
+                if (i < listaNumeros.size() - 1) {
+                    sb.append(",");
+                }
+            }
+            pw.print(sb.toString());
+            pw.flush();
+            System.out.println("Guardado en " + ARCHIVO_NUMEROS + ": " + numerosLlamados.size() + " números");
+        } catch (IOException e) {
+            System.err.println("Error al guardar " + ARCHIVO_NUMEROS + ": " + e.getMessage());
+        }
+    }
+    
     private void conectarAlServidor() {
         String ip = JOptionPane.showInputDialog(this, "Ingrese la IP del servidor:", "Conexión al Servidor", JOptionPane.PLAIN_MESSAGE);
         if (ip == null || ip.trim().isEmpty()) {
@@ -130,6 +149,7 @@ public class BingoJugador extends JFrame {
             int numero = Integer.parseInt(mensaje.substring(7));
             SwingUtilities.invokeLater(() -> {
                 numerosLlamados.add(numero);
+                guardarNumerosEnArchivo();
                 resaltarYHabilitarNumero(numero);
                 estadoLabel.setText("🎲 Nuevo número: " + numero + " - ¡Puedes marcarlo!");
             });
@@ -139,6 +159,7 @@ public class BingoJugador extends JFrame {
                 int numero = Integer.parseInt(num.trim());
                 numerosLlamados.add(numero);
             }
+            guardarNumerosEnArchivo();
             SwingUtilities.invokeLater(() -> {
                 habilitarNumerosLlamados();
                 estadoLabel.setText("✓ Sincronizado - Números disponibles: " + numerosLlamados.size());
@@ -146,6 +167,7 @@ public class BingoJugador extends JFrame {
         } else if (mensaje.equals("REINICIAR")) {
             SwingUtilities.invokeLater(() -> {
                 numerosLlamados.clear();
+                guardarNumerosEnArchivo();
                 lineasConseguidas = 0;
                 actualizarContadorLineas();
                 reiniciarMarcas();
