@@ -4,12 +4,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.net.ServerSocket;
-import java.net.Socket;
-
-
 
 public class BingoAdministrador extends JFrame {
     private JLabel numeroActualLabel;
@@ -17,6 +11,7 @@ public class BingoAdministrador extends JFrame {
     private JButton sacarNumeroBtn;
     private JButton reiniciarBtn;
     private JLabel estadoServidor;
+    private JTextField ipTextField;
     
     private List<Integer> numerosDisponibles;
     private List<Integer> numerosLlamados;
@@ -25,7 +20,8 @@ public class BingoAdministrador extends JFrame {
     private List<ClientHandler> clientes;
     private Thread serverThread;
     
-    private static final String ARCHIVO_NUMEROS = "num_bingo.txt";
+    private static final String ARCHIVO_NUMEROS = "numeros_bingo.txt";
+    private static final int PUERTO = 12345;
     
     private List<PreguntaSostenibilidad> preguntasLinea;
     private List<PreguntaSostenibilidad> preguntasBingo;
@@ -43,51 +39,48 @@ public class BingoAdministrador extends JFrame {
         crearInterfaz();
         iniciarServidor();
         
-        setSize(650, 600);
+        setSize(700, 650);
         setLocationRelativeTo(null);
         setVisible(true);
     }
     
     private void inicializarPreguntas() {
-    	preguntasLinea = new ArrayList<>();
-    	preguntasLinea.add(new PreguntaSostenibilidad(
-    			"¿Que es el termino GEI?",
-                new String[]{"Gases de Efecto Invernadero","Gases Esenciales e Infinitos", "Gases Especiales Internacionales", "Ninguna de las anteriores"},
-                0
-        )); 
-    	
+        preguntasLinea = new ArrayList<>();
+        preguntasLinea.add(new PreguntaSostenibilidad(
+            "¿Qué es el término GEI?",
+            new String[]{"Gases de Efecto Invernadero","Gases Esenciales e Infinitos", "Gases Especiales Internacionales", "Ninguna de las anteriores"},
+            0
+        ));
         
         preguntasLinea.add(new PreguntaSostenibilidad(
             "¿Cuál es una de las 3 R de la sostenibilidad?",
             new String[]{"Reducir", "Reciclar", "Reutilizar", "Todas las anteriores"},
             3
         ));
+        
         preguntasLinea.add(new PreguntaSostenibilidad(
             "¿Qué tipo de energía es renovable?",
             new String[]{"Carbón", "Petróleo", "Solar", "Gas natural"},
             2
         ));
+        
         preguntasLinea.add(new PreguntaSostenibilidad(
             "¿Cuánto tiempo tarda en degradarse una bolsa de plástico?",
             new String[]{"1 año", "10 años", "100 años", "Más de 400 años"},
             3
         ));
+        
         preguntasLinea.add(new PreguntaSostenibilidad(
             "¿Qué significa desarrollo sostenible?",
             new String[]{"Desarrollo rápido", "Desarrollo económico", "Satisfacer necesidades sin comprometer el futuro", "Desarrollo tecnológico"},
             2
         ));
+        
         preguntasLinea.add(new PreguntaSostenibilidad(
             "¿Cuál es el principal gas de efecto invernadero?",
             new String[]{"Oxígeno", "Nitrógeno", "Dióxido de carbono", "Hidrógeno"},
             2
         ));
-        
-        preguntasLinea.add(new PreguntaSostenibilidad(
-        		"¿Cuál es el principal gas de efecto invernadero?",
-        		new String[]{"Oxígeno", "Nitrógeno", "Dióxido de carbono", "Hidrógeno"},
-        		2
-        )); 
         
         preguntasBingo = new ArrayList<>();
         preguntasBingo.add(new PreguntaSostenibilidad(
@@ -95,21 +88,25 @@ public class BingoAdministrador extends JFrame {
             new String[]{"50%", "25%", "10%", "Menos del 1%"},
             3
         ));
+        
         preguntasBingo.add(new PreguntaSostenibilidad(
             "¿Cuál es la principal causa del cambio climático?",
             new String[]{"Volcanes", "Emisiones humanas de CO2", "El Sol", "Terremotos"},
             1
         ));
+        
         preguntasBingo.add(new PreguntaSostenibilidad(
             "¿Qué es la huella de carbono?",
             new String[]{"Pisada en el suelo", "Emisiones de CO2 generadas", "Un tipo de planta", "Una medida de distancia"},
             1
         ));
+        
         preguntasBingo.add(new PreguntaSostenibilidad(
             "¿Cuántos árboles se necesitan para compensar 1 tonelada de CO2 al año?",
             new String[]{"5 árboles", "20 árboles", "50 árboles", "100 árboles"},
             2
         ));
+        
         preguntasBingo.add(new PreguntaSostenibilidad(
             "¿Qué océano tiene más plástico acumulado?",
             new String[]{"Atlántico", "Índico", "Ártico", "Pacífico"},
@@ -132,7 +129,7 @@ public class BingoAdministrador extends JFrame {
                                 numerosLlamados.add(numero);
                             }
                         } catch (NumberFormatException e) {
-                            // Ignorar
+                            // Ignorar números inválidos
                         }
                     }
                     System.out.println("Números cargados desde " + ARCHIVO_NUMEROS + ": " + numerosLlamados);
@@ -140,8 +137,6 @@ public class BingoAdministrador extends JFrame {
             } catch (IOException e) {
                 System.out.println("No se pudo cargar " + ARCHIVO_NUMEROS);
             }
-        } else {
-            System.out.println("Archivo " + ARCHIVO_NUMEROS + " no existe, se creará al sacar números");
         }
     }
     
@@ -166,13 +161,12 @@ public class BingoAdministrador extends JFrame {
             }
             pw.print(sb.toString());
             pw.flush();
-            System.out.println("Guardado en " + ARCHIVO_NUMEROS + ": " + sb.toString());
+            System.out.println("Guardado en " + ARCHIVO_NUMEROS);
         } catch (IOException e) {
-            System.err.println("Error al guardar en " + ARCHIVO_NUMEROS + ": " + e.getMessage());
+            System.err.println("Error al guardar: " + e.getMessage());
             JOptionPane.showMessageDialog(this,
                 "Error al guardar números en el archivo",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -180,18 +174,28 @@ public class BingoAdministrador extends JFrame {
         try (PrintWriter pw = new PrintWriter(new FileWriter(ARCHIVO_NUMEROS))) {
             pw.print("");
             pw.flush();
-            System.out.println("Archivo " + ARCHIVO_NUMEROS + " limpiado");
+            System.out.println("Archivo limpiado");
         } catch (IOException e) {
-            System.err.println("Error al limpiar " + ARCHIVO_NUMEROS);
+            System.err.println("Error al limpiar archivo");
         }
+    }
+    
+    private String obtenerIPLocal() {
+        return "192.168.0.123";
     }
     
     private void iniciarServidor() {
         serverThread = new Thread(() -> {
             try {
-                serverSocket = new ServerSocket(12345);
-                SwingUtilities.invokeLater(() -> 
-                    estadoServidor.setText("✓ Servidor activo - Puerto 12345 - Esperando jugadores..."));
+                serverSocket = new ServerSocket(PUERTO);
+                String ipLocal = obtenerIPLocal();
+                
+                SwingUtilities.invokeLater(() -> {
+                    estadoServidor.setText("✓ Servidor activo - Puerto " + PUERTO);
+                    ipTextField.setText(ipLocal);
+                });
+                
+                System.out.println("Servidor iniciado en " + ipLocal + ":" + PUERTO);
                 
                 while (!serverSocket.isClosed()) {
                     try {
@@ -203,7 +207,9 @@ public class BingoAdministrador extends JFrame {
                         cliente.enviarNumerosLlamados(numerosLlamados);
                         
                         SwingUtilities.invokeLater(() -> 
-                            estadoServidor.setText("✓ Servidor activo - Jugadores conectados: " + clientes.size()));
+                            estadoServidor.setText("✓ Servidor activo - Jugadores: " + clientes.size()));
+                        
+                        System.out.println("Cliente conectado: " + clientSocket.getInetAddress());
                     } catch (IOException e) {
                         if (!serverSocket.isClosed()) {
                             e.printStackTrace();
@@ -212,8 +218,11 @@ public class BingoAdministrador extends JFrame {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                SwingUtilities.invokeLater(() -> 
+                    estadoServidor.setText("✗ Error al iniciar servidor"));
             }
         });
+        serverThread.setDaemon(true);
         serverThread.start();
     }
     
@@ -222,10 +231,26 @@ public class BingoAdministrador extends JFrame {
         panelSuperior.setBackground(new Color(34, 139, 34));
         panelSuperior.setLayout(new BorderLayout());
         
-        JLabel tituloLabel = new JLabel("ALMINGO ", SwingConstants.CENTER);
+        JLabel tituloLabel = new JLabel("ALMINGO - ADMINISTRADOR", SwingConstants.CENTER);
         tituloLabel.setFont(new Font("Arial", Font.BOLD, 20));
         tituloLabel.setForeground(Color.WHITE);
-        tituloLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        tituloLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
+        
+        // Panel de IP
+        JPanel panelIP = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        panelIP.setBackground(new Color(34, 139, 34));
+        JLabel ipLabel = new JLabel("IP del Servidor: ");
+        ipLabel.setForeground(Color.WHITE);
+        ipLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        
+        ipTextField = new JTextField(15);
+        ipTextField.setEditable(false);
+        ipTextField.setHorizontalAlignment(JTextField.CENTER);
+        ipTextField.setFont(new Font("Arial", Font.BOLD, 12));
+        ipTextField.setBackground(Color.YELLOW);
+        
+        panelIP.add(ipLabel);
+        panelIP.add(ipTextField);
         
         numeroActualLabel = new JLabel("--", SwingConstants.CENTER);
         numeroActualLabel.setFont(new Font("Arial", Font.BOLD, 120));
@@ -234,13 +259,18 @@ public class BingoAdministrador extends JFrame {
         numeroActualLabel.setOpaque(true);
         numeroActualLabel.setBackground(new Color(0, 100, 0));
         
-        panelSuperior.add(tituloLabel, BorderLayout.NORTH);
+        JPanel contenedorSuperior = new JPanel(new BorderLayout());
+        contenedorSuperior.setBackground(new Color(34, 139, 34));
+        contenedorSuperior.add(tituloLabel, BorderLayout.NORTH);
+        contenedorSuperior.add(panelIP, BorderLayout.CENTER);
+        
+        panelSuperior.add(contenedorSuperior, BorderLayout.NORTH);
         panelSuperior.add(numeroActualLabel, BorderLayout.CENTER);
         
         JPanel panelCentral = new JPanel(new BorderLayout());
         panelCentral.setBackground(new Color(34, 139, 34));
         
-        JLabel historialLabel = new JLabel("Numeros recientes:", SwingConstants.LEFT);
+        JLabel historialLabel = new JLabel("Números recientes:", SwingConstants.LEFT);
         historialLabel.setFont(new Font("Arial", Font.BOLD, 14));
         historialLabel.setForeground(Color.WHITE);
         historialLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
@@ -250,7 +280,7 @@ public class BingoAdministrador extends JFrame {
         numerosLlamadosArea.setFont(new Font("Arial", Font.PLAIN, 18));
         numerosLlamadosArea.setLineWrap(true);
         numerosLlamadosArea.setWrapStyleWord(true);
-        numerosLlamadosArea.setBackground(new Color(255, 255, 255));
+        numerosLlamadosArea.setBackground(Color.WHITE);
         
         JScrollPane scrollPane = new JScrollPane(numerosLlamadosArea);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
@@ -258,12 +288,9 @@ public class BingoAdministrador extends JFrame {
         panelCentral.add(historialLabel, BorderLayout.NORTH);
         panelCentral.add(scrollPane, BorderLayout.CENTER);
         
-        // Actualizar historial si hay números cargados
         if (!numerosLlamados.isEmpty()) {
             actualizarHistorial();
-            if (!numerosLlamados.isEmpty()) {
-                numeroActualLabel.setText(String.valueOf(numerosLlamados.get(numerosLlamados.size() - 1)));
-            }
+            numeroActualLabel.setText(String.valueOf(numerosLlamados.get(numerosLlamados.size() - 1)));
         }
         
         JPanel panelInferior = new JPanel(new BorderLayout());
@@ -339,14 +366,18 @@ public class BingoAdministrador extends JFrame {
     }
     
     private void enviarNumeroATodos(int numero) {
-        for (ClientHandler cliente : clientes) {
-            cliente.enviarNumero(numero);
+        Iterator<ClientHandler> iter = clientes.iterator();
+        while (iter.hasNext()) {
+            ClientHandler cliente = iter.next();
+            if (!cliente.enviarNumero(numero)) {
+                iter.remove();
+            }
         }
     }
     
     private void reiniciar() {
         int confirmacion = JOptionPane.showConfirmDialog(this,
-            "¿Estás seguro de reiniciar el bingo?\nEsto limpiará num_bingo.txt y reiniciará todos los jugadores.",
+            "¿Estás seguro de reiniciar el bingo?\nEsto reiniciará todos los jugadores.",
             "Confirmar reinicio",
             JOptionPane.YES_NO_OPTION);
         
@@ -359,8 +390,12 @@ public class BingoAdministrador extends JFrame {
             
             limpiarArchivo();
             
-            for (ClientHandler cliente : clientes) {
-                cliente.enviarReinicio();
+            Iterator<ClientHandler> iter = clientes.iterator();
+            while (iter.hasNext()) {
+                ClientHandler cliente = iter.next();
+                if (!cliente.enviarReinicio()) {
+                    iter.remove();
+                }
             }
         }
     }
@@ -369,6 +404,7 @@ public class BingoAdministrador extends JFrame {
         private Socket socket;
         private PrintWriter out;
         private BufferedReader in;
+        private volatile boolean activo = true;
         
         public ClientHandler(Socket socket) {
             this.socket = socket;
@@ -377,17 +413,25 @@ public class BingoAdministrador extends JFrame {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             } catch (IOException e) {
                 e.printStackTrace();
+                activo = false;
             }
         }
         
-        public void enviarNumero(int numero) {
-            if (out != null) {
-                out.println("NUMERO:" + numero);
+        public boolean enviarNumero(int numero) {
+            if (out != null && activo) {
+                try {
+                    out.println("NUMERO:" + numero);
+                    return !out.checkError();
+                } catch (Exception e) {
+                    activo = false;
+                    return false;
+                }
             }
+            return false;
         }
         
         public void enviarNumerosLlamados(List<Integer> numeros) {
-            if (out != null && !numeros.isEmpty()) {
+            if (out != null && !numeros.isEmpty() && activo) {
                 StringBuilder sb = new StringBuilder("HISTORIAL:");
                 for (int i = 0; i < numeros.size(); i++) {
                     sb.append(numeros.get(i));
@@ -399,14 +443,21 @@ public class BingoAdministrador extends JFrame {
             }
         }
         
-        public void enviarReinicio() {
-            if (out != null) {
-                out.println("REINICIAR");
+        public boolean enviarReinicio() {
+            if (out != null && activo) {
+                try {
+                    out.println("REINICIAR");
+                    return !out.checkError();
+                } catch (Exception e) {
+                    activo = false;
+                    return false;
+                }
             }
+            return false;
         }
         
         public void enviarPregunta(PreguntaSostenibilidad pregunta, boolean esLinea) {
-            if (out != null) {
+            if (out != null && activo) {
                 String tipo = esLinea ? "LINEA" : "BINGO";
                 out.println("PREGUNTA:" + tipo + "|" + pregunta.toString());
             }
@@ -416,10 +467,10 @@ public class BingoAdministrador extends JFrame {
         public void run() {
             try {
                 String mensaje;
-                while ((mensaje = in.readLine()) != null) {
+                while (activo && (mensaje = in.readLine()) != null) {
                     if (mensaje.startsWith("VERIFICAR_LINEA:")) {
                         String[] numeros = mensaje.substring(16).split(",");
-                        boolean valido = verificarNumerosConArchivo(numeros);
+                        boolean valido = verificarNumerosConLista(numeros);
                         if (valido) {
                             PreguntaSostenibilidad pregunta = preguntasLinea.get(
                                 new Random().nextInt(preguntasLinea.size())
@@ -430,7 +481,7 @@ public class BingoAdministrador extends JFrame {
                         }
                     } else if (mensaje.startsWith("VERIFICAR_BINGO:")) {
                         String[] numeros = mensaje.substring(16).split(",");
-                        boolean valido = verificarNumerosConArchivo(numeros);
+                        boolean valido = verificarNumerosConLista(numeros);
                         if (valido) {
                             PreguntaSostenibilidad pregunta = preguntasBingo.get(
                                 new Random().nextInt(preguntasBingo.size())
@@ -446,44 +497,31 @@ public class BingoAdministrador extends JFrame {
                     }
                 }
             } catch (IOException e) {
+                System.out.println("Cliente desconectado");
+            } finally {
+                activo = false;
                 clientes.remove(this);
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 SwingUtilities.invokeLater(() -> 
-                    estadoServidor.setText("Servidor activo - Jugadores: " + clientes.size()));
+                    estadoServidor.setText("✓ Servidor activo - Jugadores: " + clientes.size()));
             }
         }
         
-        private boolean verificarNumerosConArchivo(String[] numeros) {
-            Set<Integer> numerosArchivo = new HashSet<>();
-            try (BufferedReader br = new BufferedReader(new FileReader(ARCHIVO_NUMEROS))) {
-                String linea = br.readLine();
-                if (linea != null && !linea.trim().isEmpty()) {
-                    String[] nums = linea.split(",");
-                    for (String num : nums) {
-                        try {
-                            numerosArchivo.add(Integer.parseInt(num.trim()));
-                        } catch (NumberFormatException e) {
-                            // Ignorar
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                System.err.println("Error al leer " + ARCHIVO_NUMEROS + " para verificar");
-                return false;
-            }
-            
+        private boolean verificarNumerosConLista(String[] numeros) {
             for (String num : numeros) {
                 try {
                     int numero = Integer.parseInt(num.trim());
-                    if (!numerosArchivo.contains(numero)) {
-                        System.out.println("Número " + numero + " NO está en " + ARCHIVO_NUMEROS);
+                    if (!numerosLlamados.contains(numero)) {
                         return false;
                     }
                 } catch (NumberFormatException e) {
                     return false;
                 }
             }
-            
-            System.out.println("Todos los números verificados con " + ARCHIVO_NUMEROS);
             return true;
         }
     }
@@ -532,38 +570,6 @@ public class BingoAdministrador extends JFrame {
     }
 
     public static void main(String[] args) {
-    	
-    	
-    	ServerSocket servidor = null;
-    	Socket sc = null;
-    	DataInputStream in;
-    	DataOutputStream out;
-    	final int PUERTO = 5000;
-    	
-    	try {
-    	servidor = new ServerSocket(PUERTO);
-    	System.out.println("Servidor iniciado");
-    	
-    	while (true) {
-    		sc= servidor.accept();
-    		
-    		System.out.println("Cliente conectado");
-    		in= new DataInputStream(sc.getInputStream());
-    		out= new DataOutputStream(sc.getOutputStream());
-    		
-    		String mensaje = in.readUTF();
-    		
-    		System.out.println(mensaje);
-    		
-    		out.writeUTF("HOLAMIUNFOD");
-    		sc.close();
-    		System.out.println("Cliente desconectado");
-    	}
-    	} catch (IOException ex) {
-    		Logger.getLogger(BingoAdministrador.class.getName()).log(Level.SEVERE,null, ex);
-    	}
-    	
-    	
         SwingUtilities.invokeLater(() -> new BingoAdministrador());
     }
 }

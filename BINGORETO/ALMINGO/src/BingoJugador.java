@@ -12,6 +12,7 @@ public class BingoJugador extends JFrame {
     private JLabel estadoLabel;
     private JLabel conexionLabel;
     private JLabel lineasLabel;
+    private JTextField ipTextField;
     private static final int FILAS = 3;
     private static final int COLUMNAS = 9;
     
@@ -62,7 +63,7 @@ public class BingoJugador extends JFrame {
                     }
                     SwingUtilities.invokeLater(() -> {
                         habilitarNumerosLlamados();
-                        estadoLabel.setText("Números cargados de num_bingo.txt: " + numerosLlamados.size());
+                        estadoLabel.setText("📄 Números cargados de num_bingo.txt: " + numerosLlamados.size());
                     });
                     System.out.println("Números cargados de " + ARCHIVO_NUMEROS + ": " + numerosLlamados);
                 }
@@ -93,14 +94,22 @@ public class BingoJugador extends JFrame {
     }
     
     private void conectarAlServidor() {
+        String ip = JOptionPane.showInputDialog(this, "Ingrese la IP del servidor:", "Conexión al Servidor", JOptionPane.PLAIN_MESSAGE);
+        if (ip == null || ip.trim().isEmpty()) {
+            estadoLabel.setText("✗ IP no válida, conexión cancelada");
+            return;
+        }
+        
         Thread conexionThread = new Thread(() -> {
             try {
-                socket = new Socket("localhost", 12345);
+                socket = new Socket(ip, 12345);
                 out = new PrintWriter(socket.getOutputStream(), true);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 
-                SwingUtilities.invokeLater(() -> 
-                    conexionLabel.setText("Conectado al servidor"));
+                SwingUtilities.invokeLater(() -> {
+                    conexionLabel.setText("✓ Conectado al servidor: " + ip);
+                    ipTextField.setText(ip);
+                });
                 
                 String mensaje;
                 while ((mensaje = in.readLine()) != null) {
@@ -108,8 +117,8 @@ public class BingoJugador extends JFrame {
                 }
             } catch (IOException e) {
                 SwingUtilities.invokeLater(() -> {
-                    conexionLabel.setText("Sin conexión al servidor");
-                    estadoLabel.setText("Sin servidor, verificación solo con archivo num_bingo.txt");
+                    conexionLabel.setText("✗ Sin conexión al servidor");
+                    estadoLabel.setText("⚠️ Sin servidor, verificación solo con archivo num_bingo.txt");
                 });
             }
         });
@@ -122,7 +131,7 @@ public class BingoJugador extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 numerosLlamados.add(numero);
                 resaltarYHabilitarNumero(numero);
-                estadoLabel.setText("Nuevo número: " + numero + " - ¿Puedes marcarlo?");
+                estadoLabel.setText("🎲 Nuevo número: " + numero + " - ¡Puedes marcarlo!");
             });
         } else if (mensaje.startsWith("HISTORIAL:")) {
             String[] numeros = mensaje.substring(10).split(",");
@@ -132,7 +141,7 @@ public class BingoJugador extends JFrame {
             }
             SwingUtilities.invokeLater(() -> {
                 habilitarNumerosLlamados();
-                estadoLabel.setText("Sincronizado - Números disponibles: " + numerosLlamados.size());
+                estadoLabel.setText("✓ Sincronizado - Números disponibles: " + numerosLlamados.size());
             });
         } else if (mensaje.equals("REINICIAR")) {
             SwingUtilities.invokeLater(() -> {
@@ -141,7 +150,7 @@ public class BingoJugador extends JFrame {
                 actualizarContadorLineas();
                 reiniciarMarcas();
                 deshabilitarTodosLosNumeros();
-                estadoLabel.setText("Juego reiniciado por el administrador");
+                estadoLabel.setText("🔄 Juego reiniciado por el administrador");
             });
         } else if (mensaje.startsWith("PREGUNTA:")) {
             SwingUtilities.invokeLater(() -> mostrarPregunta(mensaje.substring(9)));
@@ -264,7 +273,7 @@ public class BingoJugador extends JFrame {
         JPanel panelTitulo = new JPanel(new BorderLayout());
         panelTitulo.setBackground(new Color(70, 130, 180));
         
-        JLabel tituloLabel = new JLabel("CARTÓN ALMINGO");
+        JLabel tituloLabel = new JLabel("🌱 MI CARTÓN DE BINGO SOSTENIBLE");
         tituloLabel.setFont(new Font("Arial", Font.BOLD, 24));
         tituloLabel.setForeground(Color.WHITE);
         tituloLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 5, 0));
@@ -277,7 +286,7 @@ public class BingoJugador extends JFrame {
         conexionLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         conexionLabel.setForeground(Color.WHITE);
         
-        lineasLabel = new JLabel("Líneas conseguidas: 0", SwingConstants.CENTER);
+        lineasLabel = new JLabel("🏆 Líneas conseguidas: 0", SwingConstants.CENTER);
         lineasLabel.setFont(new Font("Arial", Font.BOLD, 14));
         lineasLabel.setForeground(Color.YELLOW);
         
@@ -322,7 +331,7 @@ public class BingoJugador extends JFrame {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setBackground(new Color(70, 130, 180));
         
-        estadoLabel = new JLabel("Esperando números...", SwingConstants.CENTER);
+        estadoLabel = new JLabel("⏳ Esperando números...", SwingConstants.CENTER);
         estadoLabel.setFont(new Font("Arial", Font.BOLD, 13));
         estadoLabel.setForeground(Color.WHITE);
         estadoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -330,7 +339,7 @@ public class BingoJugador extends JFrame {
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         panelBotones.setBackground(new Color(70, 130, 180));
         
-        JButton verificarBtn = new JButton("VERIFICAR LÍNEA");
+        JButton verificarBtn = new JButton("✓ VERIFICAR LÍNEA");
         verificarBtn.setFont(new Font("Arial", Font.BOLD, 14));
         verificarBtn.setPreferredSize(new Dimension(190, 40));
         verificarBtn.setBackground(new Color(50, 205, 50));
@@ -338,14 +347,14 @@ public class BingoJugador extends JFrame {
         verificarBtn.setFocusPainted(false);
         verificarBtn.addActionListener(e -> verificarLinea());
         
-        JButton verificarBingoBtn = new JButton("¡BINGO!");
+        JButton verificarBingoBtn = new JButton("🎉 ¡BINGO!");
         verificarBingoBtn.setFont(new Font("Arial", Font.BOLD, 14));
         verificarBingoBtn.setPreferredSize(new Dimension(150, 40));
         verificarBingoBtn.setBackground(new Color(255, 215, 0));
         verificarBingoBtn.setFocusPainted(false);
         verificarBingoBtn.addActionListener(e -> verificarBingo());
         
-        JButton reiniciarBtn = new JButton("NUEVO CARTÓN");
+        JButton reiniciarBtn = new JButton("🔄 NUEVO CARTÓN");
         reiniciarBtn.setFont(new Font("Arial", Font.BOLD, 14));
         reiniciarBtn.setPreferredSize(new Dimension(190, 40));
         reiniciarBtn.setBackground(new Color(220, 20, 60));
@@ -374,7 +383,7 @@ public class BingoJugador extends JFrame {
         
         Set<Integer> numerosArchivo = leerNumerosDelArchivo();
         if (!numerosArchivo.contains(numero)) {
-            estadoLabel.setText("ERROR: El número " + numero + " NO está en num_bingo.txt");
+            estadoLabel.setText("❌ ERROR: El número " + numero + " NO está en num_bingo.txt");
             JOptionPane.showMessageDialog(this,
                 "No puedes marcar el número " + numero + "\n\n¡Ese número NO está en el archivo num_bingo.txt!\nSolo puedes marcar números que el administrador haya sacado.",
                 "Número no disponible",
@@ -388,12 +397,12 @@ public class BingoJugador extends JFrame {
             boton.setBackground(new Color(255, 140, 0));
             boton.setForeground(Color.WHITE);
             marcados[fila][col] = true;
-            estadoLabel.setText("Número " + numero + " marcado");
+            estadoLabel.setText("✓ Número " + numero + " marcado");
         } else {
             boton.setBackground(Color.WHITE);
             boton.setForeground(Color.BLACK);
             marcados[fila][col] = false;
-            estadoLabel.setText("Número " + numero + " desmarcado");
+            estadoLabel.setText("○ Número " + numero + " desmarcado");
         }
     }
     
@@ -426,7 +435,7 @@ public class BingoJugador extends JFrame {
         }
         
         if (!lineaMarcada) {
-            estadoLabel.setText("No tienes línea completa");
+            estadoLabel.setText("⚠️ No tienes línea completa");
             JOptionPane.showMessageDialog(this,
                 "No tienes ninguna línea completa marcada.\n\nMarca todos los números de una fila para hacer línea.",
                 "Línea incompleta",
@@ -447,7 +456,7 @@ public class BingoJugador extends JFrame {
         }
         
         if (!todosEnArchivo) {
-            estadoLabel.setText("ERROR: Números no están en num_bingo.txt");
+            estadoLabel.setText("❌ ERROR: Números no están en num_bingo.txt");
             JOptionPane.showMessageDialog(this,
                 "¡VERIFICACIÓN FALLIDA!\n\nLos siguientes números NO están en num_bingo.txt:\n" + faltantes.toString() + "\n\nSolo puedes hacer línea con números que estén en el archivo.",
                 "Error - Verificación con archivo",
@@ -466,10 +475,10 @@ public class BingoJugador extends JFrame {
         
         if (out != null) {
             out.println(sb.toString());
-            estadoLabel.setText("Verificando línea con servidor...");
+            estadoLabel.setText("⏳ Verificando línea con servidor...");
         } else {
             esperandoRespuesta = false;
-            estadoLabel.setText("Sin conexión, no se puede verificar");
+            estadoLabel.setText("⚠️ Sin conexión, no se puede verificar");
         }
     }
     
@@ -493,7 +502,7 @@ public class BingoJugador extends JFrame {
         }
         
         if (!todoMarcado) {
-            estadoLabel.setText("Cartón incompleto");
+            estadoLabel.setText("⚠️ Cartón incompleto");
             JOptionPane.showMessageDialog(this,
                 "No has marcado todos los números del cartón.\n\nMarca todos los números para cantar BINGO.",
                 "Cartón incompleto",
@@ -514,7 +523,7 @@ public class BingoJugador extends JFrame {
         }
         
         if (!todosEnArchivo) {
-            estadoLabel.setText("ERROR: Números no están en num_bingo.txt");
+            estadoLabel.setText("❌ ERROR: Números no están en num_bingo.txt");
             JOptionPane.showMessageDialog(this,
                 "¡VERIFICACIÓN FALLIDA!\n\nLos siguientes números NO están en num_bingo.txt:\n" + faltantes.toString() + "\n\nSolo puedes hacer BINGO con números que estén en el archivo.",
                 "Error - Verificación con archivo",
@@ -533,10 +542,10 @@ public class BingoJugador extends JFrame {
         
         if (out != null) {
             out.println(sb.toString());
-            estadoLabel.setText("Verificando BINGO con servidor...");
+            estadoLabel.setText("⏳ Verificando BINGO con servidor...");
         } else {
             esperandoRespuesta = false;
-            estadoLabel.setText("Sin conexión, no se puede verificar");
+            estadoLabel.setText("⚠️ Sin conexión, no se puede verificar");
         }
     }
     
@@ -567,7 +576,7 @@ public class BingoJugador extends JFrame {
         
         panel.add(panelOpciones, BorderLayout.CENTER);
         
-        String titulo = tipo.equals("LINEA") ? "¡LÍNEA VÁLIDA! - Responde para ganar" : "¡BINGO VÁLIDO! - Responde para ganar";
+        String titulo = tipo.equals("LINEA") ? "✓ ¡LÍNEA VÁLIDA! - Responde para ganar" : "🎉 ¡BINGO VÁLIDO! - Responde para ganar";
         
         int resultado = JOptionPane.showConfirmDialog(this, panel, titulo,
             JOptionPane.OK_CANCEL_OPTION,
@@ -586,32 +595,32 @@ public class BingoJugador extends JFrame {
             out.println("RESPUESTA:" + correcto + ":0");
             
             if (!correcto) {
-                estadoLabel.setText("Respuesta incorrecta - La correcta era: " + opciones[respuestaCorrecta]);
+                estadoLabel.setText("❌ Respuesta incorrecta - La correcta era: " + opciones[respuestaCorrecta]);
             }
         } else {
             out.println("RESPUESTA:false:0");
-            estadoLabel.setText("Pregunta cancelada");
+            estadoLabel.setText("❌ Pregunta cancelada");
         }
     }
     
     private void mostrarExitoLinea() {
         JOptionPane.showMessageDialog(this,
             "¡FELICIDADES!\n\n✓ Has conseguido una LÍNEA\n✓ Respuesta correcta\n\n¡Sigue jugando para conseguir BINGO!",
-            "¡LÍNEA CONSEGUIDA!",
+            "🎉 ¡LÍNEA CONSEGUIDA!",
             JOptionPane.INFORMATION_MESSAGE);
-        estadoLabel.setText("¡LÍNEA conseguida! Total: " + lineasConseguidas);
+        estadoLabel.setText("🎉 ¡LÍNEA conseguida! Total: " + lineasConseguidas);
     }
     
     private void mostrarFalloPregunta() {
         JOptionPane.showMessageDialog(this,
             "Lo siento, has fallado la pregunta de sostenibilidad.\n\nAunque tu línea/bingo era válida, necesitas responder\ncorrectamente la pregunta para ganar.\n\n¡Sigue intentándolo!",
-            "Respuesta Incorrecta",
+            "❌ Respuesta Incorrecta",
             JOptionPane.ERROR_MESSAGE);
-        estadoLabel.setText("Pregunta fallada - No se cuenta como línea");
+        estadoLabel.setText("❌ Pregunta fallada - No se cuenta como línea");
     }
     
     private void mostrarVerificacionErronea() {
-        estadoLabel.setText("VERIFICACIÓN ERRÓNEA");
+        estadoLabel.setText("❌ VERIFICACIÓN ERRÓNEA");
         JOptionPane.showMessageDialog(this,
             "¡ERROR EN LA VERIFICACIÓN!\n\nAlgunos números marcados NO han sido llamados.\nRevisa que todos los números estén en num_bingo.txt",
             "Verificación Incorrecta",
@@ -660,35 +669,6 @@ public class BingoJugador extends JFrame {
     }
     
     public static void main(String[] args) {
-    	
-    	final String HOST= "192.168.0.244";
-    	final int PUERTO = 5000;
-    	DataInputStream in;
-    	DataOutputStream out;
-    	
-    	try {
-			Socket sc = new Socket(HOST, PUERTO);
-			
-			in= new DataInputStream(sc.getInputStream());
-	    	out = new DataOutputStream(sc.getOutputStream());
-	    	
-	    	out.writeUTF("HOLA CLIENTE");
-	    	
-	    	String mensaje = in.readUTF();
-	    	
-	    	System.out.println(mensaje);
-	    	
-	    	sc.close();
-	    	
-	    	
-		} catch (UnknownHostException e) {
-			
-			e.printStackTrace();
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-		}
-    	
         SwingUtilities.invokeLater(() -> new BingoJugador());
     }
 }
