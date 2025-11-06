@@ -61,6 +61,7 @@ public class BingoJugador extends JFrame {
                             // Ignorar
                         }
                     }
+                    
                     SwingUtilities.invokeLater(() -> {
                         habilitarNumerosLlamados();
                         estadoLabel.setText("📄 Números cargados de num_bingo.txt: " + numerosLlamados.size());
@@ -106,9 +107,11 @@ public class BingoJugador extends JFrame {
             }
             pw.print(sb.toString());
             pw.flush();
-            System.out.println("Guardado en " + ARCHIVO_NUMEROS + ": " + numerosLlamados.size() + " números");
+            System.out.println("✓ Guardado en " + ARCHIVO_NUMEROS + ": " + numerosLlamados.size() + " números");
+            System.out.println("  Contenido: " + sb.toString());
         } catch (IOException e) {
-            System.err.println("Error al guardar " + ARCHIVO_NUMEROS + ": " + e.getMessage());
+            System.err.println("✗ Error al guardar " + ARCHIVO_NUMEROS + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -147,27 +150,29 @@ public class BingoJugador extends JFrame {
     private void procesarMensajeServidor(String mensaje) {
         if (mensaje.startsWith("NUMERO:")) {
             int numero = Integer.parseInt(mensaje.substring(7));
+            numerosLlamados.add(numero);
+            guardarNumerosEnArchivo();
             SwingUtilities.invokeLater(() -> {
-                numerosLlamados.add(numero);
-                guardarNumerosEnArchivo();
                 resaltarYHabilitarNumero(numero);
                 estadoLabel.setText("🎲 Nuevo número: " + numero + " - ¡Puedes marcarlo!");
             });
         } else if (mensaje.startsWith("HISTORIAL:")) {
             String[] numeros = mensaje.substring(10).split(",");
+            System.out.println("📥 Recibido historial del servidor: " + numeros.length + " números");
             for (String num : numeros) {
                 int numero = Integer.parseInt(num.trim());
                 numerosLlamados.add(numero);
             }
+            System.out.println("📊 Total de números en memoria: " + numerosLlamados.size());
             guardarNumerosEnArchivo();
             SwingUtilities.invokeLater(() -> {
                 habilitarNumerosLlamados();
                 estadoLabel.setText("✓ Sincronizado - Números disponibles: " + numerosLlamados.size());
             });
         } else if (mensaje.equals("REINICIAR")) {
+            numerosLlamados.clear();
+            guardarNumerosEnArchivo();
             SwingUtilities.invokeLater(() -> {
-                numerosLlamados.clear();
-                guardarNumerosEnArchivo();
                 lineasConseguidas = 0;
                 actualizarContadorLineas();
                 reiniciarMarcas();
