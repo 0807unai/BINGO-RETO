@@ -20,7 +20,7 @@ public class BingoAdministrador extends JFrame {
     private List<ClientHandler> clientes;
     private Thread serverThread;
     
-    private static final String ARCHIVO_NUMEROS = "numeros_bingo.txt";
+    private static final String ARCHIVO_NUMEROS = "num_bingo.txt";
     private static final int PUERTO = 12345;
     
     private List<PreguntaSostenibilidad> preguntasLinea;
@@ -191,7 +191,7 @@ public class BingoAdministrador extends JFrame {
                 String ipLocal = obtenerIPLocal();
                 
                 SwingUtilities.invokeLater(() -> {
-                    estadoServidor.setText("✓ Servidor activo - Puerto " + PUERTO);
+                    estadoServidor.setText("Servidor activo - Puerto " + PUERTO);
                     ipTextField.setText(ipLocal);
                 });
                 
@@ -207,7 +207,7 @@ public class BingoAdministrador extends JFrame {
                         cliente.enviarNumerosLlamados(numerosLlamados);
                         
                         SwingUtilities.invokeLater(() -> 
-                            estadoServidor.setText("✓ Servidor activo - Jugadores: " + clientes.size()));
+                            estadoServidor.setText("Servidor activo - Jugadores: " + clientes.size()));
                         
                         System.out.println("Cliente conectado: " + clientSocket.getInetAddress());
                     } catch (IOException e) {
@@ -219,7 +219,7 @@ public class BingoAdministrador extends JFrame {
             } catch (IOException e) {
                 e.printStackTrace();
                 SwingUtilities.invokeLater(() -> 
-                    estadoServidor.setText("✗ Error al iniciar servidor"));
+                    estadoServidor.setText("Error al iniciar servidor"));
             }
         });
         serverThread.setDaemon(true);
@@ -507,7 +507,7 @@ public class BingoAdministrador extends JFrame {
                     e.printStackTrace();
                 }
                 SwingUtilities.invokeLater(() -> 
-                    estadoServidor.setText("✓ Servidor activo - Jugadores: " + clientes.size()));
+                    estadoServidor.setText("Servidor activo - Jugadores: " + clientes.size()));
             }
         }
         
