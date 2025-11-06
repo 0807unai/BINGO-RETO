@@ -23,7 +23,7 @@ public class BingoJugador extends JFrame {
     private boolean esperandoRespuesta = false;
     private int lineasConseguidas = 0;
     
-    private static final String ARCHIVO_NUMEROS = "num_bingo.txt";
+    private static final String ARCHIVO_NUMEROS = "\\\\192.168.0.123\\ALMINGO\\num_bingo.txt";
     
     public BingoJugador() {
         setTitle("Mi Cartón de Bingo Sostenible");
