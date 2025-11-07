@@ -59,6 +59,12 @@ public class BingoAdministrador extends JFrame {
         ));
         
         preguntasLinea.add(new PreguntaSostenibilidad(
+                "¿Cuántos son los Objetivos de Desarrollo Sostenible (ODS) establecidos por la ONU en la Agenda 2030?",
+                new String[]{"7", "17", "10", "20"},
+                1
+            ));
+        
+        preguntasLinea.add(new PreguntaSostenibilidad(
             "¿Qué tipo de energía es renovable?",
             new String[]{"Carbón", "Petróleo", "Solar", "Gas natural"},
             2
@@ -81,6 +87,24 @@ public class BingoAdministrador extends JFrame {
             new String[]{"Oxígeno", "Nitrógeno", "Dióxido de carbono", "Hidrógeno"},
             2
         ));
+        
+        preguntasLinea.add(new PreguntaSostenibilidad(
+                "¿Qué concepto clave en el urbanismo sostenible busca reducir la necesidad de usar vehículos motorizados al concentrar servicios, tiendas y viviendas en distancias que se pueden recorrer a pie?",
+                new String[]{"Expansión urbana o 'sprawl'", "Ciudades inteligentes o 'smart cities'", "La ciudad de los 15 minutos", "Rehabilitación patrimonial"},
+                2
+            ));
+        
+        preguntasLinea.add(new PreguntaSostenibilidad(
+                "¿Qué término se utiliza para describir la práctica de establecer un área natural protegida con el objetivo de estudiar y conservar su diversidad biológica?",
+                new String[]{"Monocultivo intensivo", "Biorremediación activa", "Explotación forestal controlada", "Desarrollo in-situ"},
+                3
+            ));
+        
+        preguntasLinea.add(new PreguntaSostenibilidad(
+                "¿Cuál es el modelo económico tradicional que opera con el principio de 'tomar, hacer, desechar' y es el opuesto a la Economía Circular?",
+                new String[]{"Economía de escala", "Economía de subsistencia", "Economía lineal", "Economía verde"},
+                2
+            ));
         
         preguntasBingo = new ArrayList<>();
         preguntasBingo.add(new PreguntaSostenibilidad(
@@ -112,6 +136,36 @@ public class BingoAdministrador extends JFrame {
             new String[]{"Atlántico", "Índico", "Ártico", "Pacífico"},
             3
         ));
+        
+        preguntasBingo.add(new PreguntaSostenibilidad(
+                "¿Cuál es el término que describe la práctica de diseñar productos con una vida útil artificialmente corta, incentivando al consumidor a comprar un reemplazo?",
+                new String[]{"Obsolescencia funcional", "Obsolescencia programada", "Diseño modular", "Obsolescencia percibida"},
+                1
+            ));
+        
+        preguntasBingo.add(new PreguntaSostenibilidad(
+                "¿Qué pilar fundamental de la sostenibilidad se refiere a la distribución justa de la riqueza, la equidad y la satisfacción de las necesidades humanas básicas?",
+                new String[]{"Pilar Tecnológico", "Pilar Ambiental", "Pilar Político", "Pilar Social"},
+                3
+            ));
+        
+        preguntasBingo.add(new PreguntaSostenibilidad(
+                "¿Qué fenómeno ocurre en los cuerpos de agua cuando hay un exceso de nutrientes (como nitratos y fosfatos) que provoca el crecimiento descontrolado de algas y el agotamiento del oxígeno?",
+                new String[]{"Eutrofización", "Desalinización", "Sedimentación", "Acidificación"},
+                0
+            ));
+        
+        preguntasBingo.add(new PreguntaSostenibilidad(
+                "¿Cuál es la principal razón por la que el metano (CH4) liberado por el ganado bovino es una preocupación ambiental a corto plazo?",
+                new String[]{"Destruye la capa de ozono de manera más rápida que otros gases.", "Tiene un potencial de calentamiento global mucho mayor que el CO2 en un periodo de 20 años.", "Su alta toxicidad causa la muerte masiva de animales silvestres.", "Se acumula en los océanos, provocando la acidificación de sus aguas."},
+                1
+            ));
+        
+        preguntasBingo.add(new PreguntaSostenibilidad(
+                "¿Cuál es el principal objetivo del Acuerdo de París de 2015 en relación con el calentamiento global?",
+                new String[]{"Limitar el aumento de la temperatura media mundial a muy por debajo de 2°C con respecto a los niveles preindustriales.", "Prohibir totalmente el uso de combustibles fósiles antes del año 2030.", "Establecer cuotas de pesca sostenibles a nivel mundial.", "Financiar proyectos de reforestación exclusivamente en países en desarrollo."},
+                0
+            ));
     }
     
     private void cargarNumerosDesdeArchivo() {
