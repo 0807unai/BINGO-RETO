@@ -24,7 +24,7 @@ import javax.swing.JTextArea;
 import javax.swing.JSeparator;
 import javax.swing.BorderFactory;
 
-// --- CLASE AUXILIAR PREGUNTA (INTEGRADA) ---
+
 class Pregunta {
     private String textoPregunta;
     private String[] opciones; 
@@ -44,23 +44,23 @@ class Pregunta {
         return respuestaUsuario != null && respuestaUsuario.equalsIgnoreCase(respuestaCorrecta);
     }
 }
-// --- FIN CLASE AUXILIAR PREGUNTA ---
+
 
 public class Bingo extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
     
-    // Declaración de todos los componentes de la interfaz
-    private JButton[] cartonBotones; // Array de 25 botones para el cartón 5x5
-    private JLabel lblNumeroActual; // Referencia al JLabel donde se muestra el último número
-    private JLabel lblBolaGrande;   // Alias para lblNumeroActual para mayor claridad
+
+    private JButton[] cartonBotones;
+    private JLabel lblNumeroActual;
+    private JLabel lblBolaGrande;  
     private JButton btnSacarBola;
     private JButton btnNuevaPartida;
     private JButton btnSalir;
-    private JButton[] pizarraCantante; // Botones del 1 al 75 para el Cantante
+    private JButton[] pizarraCantante; 
     
-    // Variables de Red y Lógica
+    // Variables de Red
     private boolean esCantante;
     private ServidorBingo servidor; 
     private ClienteBingo cliente;   
@@ -68,10 +68,13 @@ public class Bingo extends JFrame {
     private List<Integer> numerosCarton;
     private List<Integer> numerosCantados = new ArrayList<>();
     
-    // Variables del Quiz y Estado del Juego
+    // Bandera para el estado del juego
+    private boolean juegoTerminado = false;
+
+ 
     private List<Pregunta> bancoPreguntas;
     private int indicePreguntaActual = 0; 
-    private int lineasCompletadas = 0; // Contador de líneas para el Quiz
+    private int lineasCompletadas = 0;
 
     /**
      * Launch the application.
@@ -133,9 +136,9 @@ public class Bingo extends JFrame {
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
         
-        // Inicialización de componentes (declaración explícita)
+        // Inicialización de componentes
         lblNumeroActual = new JLabel("Número Sorteado:");
-        lblBolaGrande = new JLabel("N/A"); // Se usará como display principal del número
+        lblBolaGrande = new JLabel("N/A"); 
         lblBolaGrande.setHorizontalAlignment(SwingConstants.CENTER);
         lblBolaGrande.setFont(new Font("Tahoma", Font.BOLD, 48));
         lblBolaGrande.setForeground(Color.RED);
@@ -148,14 +151,14 @@ public class Bingo extends JFrame {
         
         btnSalir = new JButton("Salir");
 
-        // --- Configuración de la Interfaz según el rol ---
+        // INTERFAZ SEGUN LO QUE ELIJAS
         if (esCantante) {
-            // Configuración del JFrame para el Cantante
+
             setBounds(100, 100, 950, 650); 
             contentPane.setLayout(new BorderLayout(5, 5));
             contentPane.setBackground(Color.DARK_GRAY.darker());
             
-            // ... (Configuración de paneles del Cantante) ...
+ 
             JPanel panelSorteo = new JPanel(new BorderLayout(10, 10));
             panelSorteo.setBackground(Color.DARK_GRAY);
             panelSorteo.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -172,7 +175,7 @@ public class Bingo extends JFrame {
             panelSorteo.add(panelBotones, BorderLayout.EAST);
             contentPane.add(panelSorteo, BorderLayout.NORTH);
 
-            // Panel Pizarra de números
+
             pizarraCantante = new JButton[75];
             JPanel panelPizarra = new JPanel(new GridLayout(7, 11, 2, 2)); 
             
@@ -192,18 +195,18 @@ public class Bingo extends JFrame {
             contentPane.add(panelCentro, BorderLayout.CENTER);
             
         } else {
-            // --- Interfaz del Jugador ---
+
             setBounds(100, 100, 800, 600); 
             contentPane.setLayout(new BorderLayout(10, 10));
             
-            // 1. Panel del Cartón (5x5 con encabezados)
+
             JPanel panelCarton = new JPanel(new GridLayout(6, 5, 5, 5)); 
             panelCarton.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             
             cartonBotones = new JButton[25];
             numerosCarton = generarCartonDePrueba(); 
             
-            // Añadir encabezados B-I-N-G-O (Fila 1)
+   
             String[] letras = {"B", "I", "N", "G", "O"};
             for (String letra : letras) {
                 JLabel lblLetra = new JLabel(letra);
@@ -213,7 +216,7 @@ public class Bingo extends JFrame {
                 panelCarton.add(lblLetra);
             }
 
-            // Añadir los botones del cartón (Filas 2-6)
+
             for (int i = 0; i < 25; i++) {
                 JButton btn = new JButton(String.valueOf(numerosCarton.get(i)));
                 btn.setFont(new Font("Tahoma", Font.BOLD, 16));
@@ -223,7 +226,7 @@ public class Bingo extends JFrame {
             }
             contentPane.add(panelCarton, BorderLayout.CENTER);
             
-            // 2. Panel de Control Lateral (EAST)
+
             JPanel panelControl = new JPanel(new GridLayout(4, 1, 10, 10));
             panelControl.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             
@@ -233,12 +236,11 @@ public class Bingo extends JFrame {
             contentPane.add(panelControl, BorderLayout.EAST);
             btnSacarBola.setVisible(false); 
         }
-        // --- Fin de Configuración de la Interfaz ---
 
-        // --- Lógica de Conexión ---
+
         if (esCantante) {
             try {
-                servidor = new ServidorBingo(puerto);
+                servidor = new ServidorBingo(puerto, this::setJuegoTerminado);
                 servidor.iniciar();
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error al iniciar el Servidor.", "Error de Red", JOptionPane.ERROR_MESSAGE);
@@ -256,7 +258,19 @@ public class Bingo extends JFrame {
 
         inicializarJuego();
         registrarEventos();
-    }//FIN DEL CONSTRUCTOR
+    }
+
+    // Método para que ServidorBingo pueda notificar el fin del juego al Cantante
+    public void setJuegoTerminado(boolean terminado) {
+        EventQueue.invokeLater(() -> {
+            this.juegoTerminado = terminado;
+            if (terminado) {
+                lblBolaGrande.setText("BINGO!");
+                btnSacarBola.setEnabled(false);
+                JOptionPane.showMessageDialog(this, "¡Un jugador ha cantado BINGO! El juego ha terminado.", "FIN DE PARTIDA", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+    }
 
 	public void registrarEventos() {
 		btnSalir.addActionListener(new ActionListener() {
@@ -279,13 +293,13 @@ public class Bingo extends JFrame {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//restaurar todos los valores de inicio
+
 				inicializarJuego();
 			}
 		});
 		
 		if (!esCantante) {
-			 // Eventos para los botones del cartón (marcar número)
+	
 			 for(JButton boton : cartonBotones) {
 				boton.addActionListener(new ActionListener() {
 					
@@ -297,13 +311,12 @@ public class Bingo extends JFrame {
 			 }
 		}
 		
-	}//FIN DE REGISTRAR EVENTOS
+	}
     
-    // --- FUNCIONES LÓGICAS DEL JUEGO ---
+    // FUNCIONES DEL JUEGO
     
     private void cargarPreguntas() {
         bancoPreguntas = new ArrayList<>();
-        // ... (código de carga de archivo idéntico al de la respuesta anterior)
         try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader("preguntas_sostenibilidad.txt"))) {
             String linea;
             while ((linea = br.readLine()) != null) {
@@ -321,7 +334,7 @@ public class Bingo extends JFrame {
                         opC.length() > 2 && opC.charAt(1) == '.' ? opC.substring(2).trim() : opC.trim(), 
                         respuesta.trim()));
                 }
-                br.readLine(); // Consumir la línea en blanco entre preguntas
+                br.readLine(); 
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error al cargar el archivo de preguntas (preguntas_sostenibilidad.txt). Asegúrate de que exista.", "Error de Archivo", JOptionPane.ERROR_MESSAGE);
@@ -329,7 +342,6 @@ public class Bingo extends JFrame {
     }
 
     private List<Integer> generarCartonDePrueba() {
-        // ... (código de generación de cartón 5x5 con rangos)
         List<Integer> cartonFinalOrdenado = new ArrayList<>();
         int[][] rangos = {
             {1, 15}, {16, 30}, {31, 45}, {46, 60}, {61, 75}
@@ -360,6 +372,7 @@ public class Bingo extends JFrame {
     }
     
     private void inicializarJuego() {
+        juegoTerminado = false; 
         if (esCantante) {
             bombo = new ArrayList<>();
             for (int i = 1; i <= 75; i++) {
@@ -375,11 +388,10 @@ public class Bingo extends JFrame {
             }
         }
         numerosCantados.clear(); 
-        lineasCompletadas = 0; // Reinicio del contador de líneas
+        lineasCompletadas = 0; 
         
         if (!esCantante) {
             numerosCarton = generarCartonDePrueba();
-            // Restaurar el estado de los botones del cartón
             for(int i = 0; i < 25; i++) {
                 cartonBotones[i].setText(String.valueOf(numerosCarton.get(i)));
                 cartonBotones[i].setBackground(Color.WHITE);
@@ -391,7 +403,7 @@ public class Bingo extends JFrame {
     }
     
     private void sacarNuevaBola() {
-        if (!esCantante || servidor == null) return;
+        if (!esCantante || servidor == null || juegoTerminado) return;
 
         if (bombo.isEmpty()) {
             lblBolaGrande.setText("¡FIN!");
@@ -402,7 +414,6 @@ public class Bingo extends JFrame {
         int numeroSorteado = bombo.remove(0);
         lblBolaGrande.setText(String.valueOf(numeroSorteado));
 
-        // Marcar en la pizarra del cantante
         JButton btnMarcado = pizarraCantante[numeroSorteado - 1];
         btnMarcado.setBackground(Color.RED);
         btnMarcado.setForeground(Color.WHITE);
@@ -412,29 +423,45 @@ public class Bingo extends JFrame {
         servidor.enviarNumero(numeroSorteado);
     }
 
-    /* FUNCIÓN QUE SE EJECUTA CUANDO SE RECIBE UN NÚMERO POR RED */
+
     private void actualizarNumeroCantado(int numero) {
         EventQueue.invokeLater(() -> {
             lblBolaGrande.setText(String.valueOf(numero));
             numerosCantados.add(numero); 
+            
+            if (!esCantante && !juegoTerminado) {
+                // Asistencia visual (NARANJA) para el jugador
+                for (JButton boton : cartonBotones) {
+                    try {
+                        int numeroBoton = Integer.parseInt(boton.getText());
+                        if (numeroBoton == numero && boton.getBackground().equals(Color.WHITE)) {
+                            boton.setBackground(Color.ORANGE); 
+                        }
+                    } catch (NumberFormatException ex) { /* Ignorar */ }
+                }
+            }
+            
             comprobarLineaBingo();
         });
     }
     
     private void marcarNumero(JButton boton) {
+        if (juegoTerminado) return; 
+        
         try {
             int numeroBoton = Integer.parseInt(boton.getText());
             
-            // Comprobamos si el número ha sido cantado
+            
             if (numerosCantados.contains(numeroBoton)) {
                 
-                if (boton.isEnabled()) {
-                    // Si el botón está activo, lo marcamos (deshabilitamos)
-                    boton.setBackground(Color.YELLOW);
-                    boton.setEnabled(false);
-                    // Comprobar si se ha completado alguna línea
+                // Si el número está en NARANJA (cantado, no marcado) o BLANCO (no marcado, pero cantado)
+                if (boton.getBackground().equals(Color.ORANGE) || boton.getBackground().equals(Color.WHITE)) {
+                    
+                    boton.setBackground(Color.GREEN);
                     comprobarLineaBingo(); 
-                } else {
+                    
+                } else if (boton.getBackground().equals(Color.GREEN)) {
+                    // Si ya está en verde (marcado)
                     JOptionPane.showMessageDialog(this, "Este número (" + numeroBoton + ") ya está marcado.");
                 }
                 
@@ -448,15 +475,16 @@ public class Bingo extends JFrame {
     }
     
     private void comprobarLineaBingo() {
-        if (esCantante) return; 
+        if (esCantante || juegoTerminado) return; 
 
         int lineasActuales = 0;
 
-        // 1. Contar Líneas Horizontales (5)
+        // 1. Contar Líneas Horizontales 
         for (int i = 0; i < 5; i++) {
             boolean lineaCompleta = true;
             for (int j = 0; j < 5; j++) {
-                if (cartonBotones[(i * 5) + j].isEnabled()) {
+                // Comprobamos el color, no .isEnabled()
+                if (!cartonBotones[(i * 5) + j].getBackground().equals(Color.GREEN)) { 
                     lineaCompleta = false;
                     break;
                 }
@@ -464,11 +492,12 @@ public class Bingo extends JFrame {
             if (lineaCompleta) { lineasActuales++; }
         }
         
-        // 2. Contar Líneas Verticales (5)
+        // 2. Contar Líneas Verticales 
         for (int j = 0; j < 5; j++) {
             boolean lineaCompleta = true;
             for (int i = 0; i < 5; i++) {
-                if (cartonBotones[(i * 5) + j].isEnabled()) {
+                // Comprobamos el color, no .isEnabled()
+                if (!cartonBotones[(i * 5) + j].getBackground().equals(Color.GREEN)) {
                     lineaCompleta = false;
                     break;
                 }
@@ -478,58 +507,71 @@ public class Bingo extends JFrame {
         
         // 3. Contar Diagonales (2)
         // Diagonal Principal (0, 6, 12, 18, 24)
-        if (!cartonBotones[0].isEnabled() && !cartonBotones[6].isEnabled() && 
-            !cartonBotones[12].isEnabled() && !cartonBotones[18].isEnabled() && 
-            !cartonBotones[24].isEnabled()) {
+        if (cartonBotones[0].getBackground().equals(Color.GREEN) && cartonBotones[6].getBackground().equals(Color.GREEN) && 
+            cartonBotones[12].getBackground().equals(Color.GREEN) && cartonBotones[18].getBackground().equals(Color.GREEN) && 
+            cartonBotones[24].getBackground().equals(Color.GREEN)) {
             lineasActuales++;
         }
         // Diagonal Secundaria (4, 8, 12, 16, 20)
-        if (!cartonBotones[4].isEnabled() && !cartonBotones[8].isEnabled() && 
-            !cartonBotones[12].isEnabled() && !cartonBotones[16].isEnabled() && 
-            !cartonBotones[20].isEnabled()) {
+        if (cartonBotones[4].getBackground().equals(Color.GREEN) && cartonBotones[8].getBackground().equals(Color.GREEN) && 
+            cartonBotones[12].getBackground().equals(Color.GREEN) && cartonBotones[16].getBackground().equals(Color.GREEN) && 
+            cartonBotones[20].getBackground().equals(Color.GREEN)) {
             lineasActuales++;
         }
 
         int totalMarcados = 0;
         for (JButton btn : cartonBotones) {
-            if (!btn.isEnabled()) {
+            // Comprobamos el color, no .isEnabled()
+            if (btn.getBackground().equals(Color.GREEN)) {
                 totalMarcados++;
             }
         }
         
-        // --- LÓGICA DEL QUIZ (Activación por CADA NUEVA Línea) ---
+        // LOGICA DEL QUIZ
         if (lineasActuales > lineasCompletadas) {
             
             lineasCompletadas = lineasActuales; 
             
             if (!bancoPreguntas.isEmpty()) {
                 
-                Pregunta pregunta = bancoPreguntas.get(indicePreguntaActual % bancoPreguntas.size());
-                indicePreguntaActual++;
+                // SELECCIÓN ALEATORIA: Elegir una pregunta al azar
+                java.util.Random rand = new java.util.Random();
+                int indiceAleatorio = rand.nextInt(bancoPreguntas.size());
+                
+                Pregunta pregunta = bancoPreguntas.get(indiceAleatorio);
+                indicePreguntaActual++; 
                 
                 JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
                 panel.add(new JLabel("¡FELICIDADES! LÍNEA #" + lineasCompletadas + " COMPLETA!"));
                 panel.add(new JSeparator());
                 
-                JTextArea areaPregunta = new JTextArea(pregunta.getTextoPregunta());
+                // Usamos JTextArea con un tamaño fijo y JScrollPane para asegurar la visibilidad
+                JTextArea areaPregunta = new JTextArea(pregunta.getTextoPregunta(), 3, 30); // 3 filas, 30 columnas
                 areaPregunta.setWrapStyleWord(true);
                 areaPregunta.setLineWrap(true);
                 areaPregunta.setEditable(false);
                 areaPregunta.setBackground(panel.getBackground());
-                panel.add(areaPregunta);
+                
+                JScrollPane scrollPregunta = new JScrollPane(areaPregunta);
+                scrollPregunta.setBorder(BorderFactory.createEmptyBorder());
+                panel.add(scrollPregunta);
                 panel.add(new JSeparator());
                 
-                String[] opciones = {
-                    "A: " + pregunta.getOpcion(0), 
-                    "B: " + pregunta.getOpcion(1), 
-                    "C: " + pregunta.getOpcion(2)  
-                };
+                // Muestra las opciones como etiquetas dentro del panel
+                panel.add(new JLabel("Selecciona la respuesta:"));
+                panel.add(new JLabel("A: " + pregunta.getOpcion(0))); 
+                panel.add(new JLabel("B: " + pregunta.getOpcion(1))); 
+                panel.add(new JLabel("C: " + pregunta.getOpcion(2))); 
+
+                // Los botones de opción son solo las letras
+                String[] opciones = { "A", "B", "C" }; 
                 
+                // Usamos DEFAULT_OPTION y mapeamos por índice para asegurar la visibilidad de los 3 botones
                 int seleccion = JOptionPane.showOptionDialog(
                     this, 
                     panel, 
                     "¡BONUS POR LÍNEA!", 
-                    JOptionPane.YES_NO_CANCEL_OPTION, 
+                    JOptionPane.DEFAULT_OPTION, 
                     JOptionPane.QUESTION_MESSAGE, 
                     null, 
                     opciones, 
@@ -537,9 +579,10 @@ public class Bingo extends JFrame {
                 );
                 
                 String respuestaUsuario = null;
-                if (seleccion == JOptionPane.YES_OPTION) { respuestaUsuario = "A"; } 
-                else if (seleccion == JOptionPane.NO_OPTION) { respuestaUsuario = "B"; } 
-                else if (seleccion == JOptionPane.CANCEL_OPTION) { respuestaUsuario = "C"; }
+                // Mapeamos la selección por índice (0=A, 1=B, 2=C)
+                if (seleccion == 0) { respuestaUsuario = "A"; } 
+                else if (seleccion == 1) { respuestaUsuario = "B"; } 
+                else if (seleccion == 2) { respuestaUsuario = "C"; }
 
                 if (pregunta.esRespuestaCorrecta(respuestaUsuario)) {
                     JOptionPane.showMessageDialog(this, "¡RESPUESTA CORRECTA! Ganaste puntos de sostenibilidad.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
@@ -552,8 +595,12 @@ public class Bingo extends JFrame {
         // Comprobar BINGO
         if (totalMarcados == 25) {
              JOptionPane.showMessageDialog(this, "¡¡BINGO!! ¡Has ganado!", "BINGO", JOptionPane.INFORMATION_MESSAGE);
-             // Deshabilitar todos los botones para finalizar el juego
+             juegoTerminado = true;
              for(JButton btn : cartonBotones) btn.setEnabled(false);
+             
+             if (!esCantante && cliente != null) {
+                 cliente.enviarMensaje("BINGO"); 
+             }
         }
     }
 }
